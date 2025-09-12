@@ -2,7 +2,7 @@
 :root {
   --primary-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   --sidebar-bg: rgba(255, 255, 255, 0.95);
-  --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --header-bg: linear-gradient(135deg, #062dd6 0%, #6f79e4 100%);
   --header-glass: rgba(255, 255, 255, 0.1);
   --header-text: #ffffff;
   --text-primary: #2c3e50;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -17,7 +18,7 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 // --- ENHANCED HEADER COMPONENT ---
-const Header = ({ onLiveDataClick, onRequestDataClick, onHomeClick, isConnected, weatherData }) => {
+const Header = ({ onLiveDataClick, onRequestDataClick, onHistoricalChartsClick, onHomeClick, isConnected, weatherData }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     useEffect(() => {
@@ -45,7 +46,6 @@ const Header = ({ onLiveDataClick, onRequestDataClick, onHomeClick, isConnected,
 
     return (
         <header className="app-header">
-            {/* Breadcrumb Navigation */}
             <div className="breadcrumb-nav" style={{
                 position: 'absolute',
                 top: '10px',
@@ -91,6 +91,11 @@ const Header = ({ onLiveDataClick, onRequestDataClick, onHomeClick, isConnected,
                 <button onClick={onLiveDataClick} className="nav-btn live-data-btn">
                     <span>📊</span>
                     <span>Live Data</span>
+                </button>
+
+                <button onClick={onHistoricalChartsClick} className="nav-btn historical-btn">
+                    <span>📈</span>
+                    <span>Historical Data</span>
                 </button>
                 
                 <button onClick={onRequestDataClick} className="nav-btn request-data-btn">
@@ -279,6 +284,204 @@ const WeatherDisplay = ({ data, loading, error }) => {
     );
 };
 
+// --- NEW: HISTORICAL CHARTS COMPONENT ---
+// --- NEW: HISTORICAL CHARTS COMPONENT ---
+const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoading, historicalError }) => {
+    // State to manage user selections
+    const [selectedDays, setSelectedDays] = useState(5);
+    // NEW: State for the single parameter selection. Default to 'temperature'.
+    const [selectedParameter, setSelectedParameter] = useState('temperature');
+
+    // Configuration for each selectable parameter
+    // This makes it easy to define the label, color, and chart type for each option
+    const parameterOptions = [
+        { value: 'temperature', label: 'Temperature (°C)', color: '#e74c3c', type: 'line' },
+        { value: 'humidity', label: 'Humidity (%)', color: '#3498db', type: 'line' },
+        { value: 'airPressure', label: 'Air Pressure (hPa)', color: '#8e44ad', type: 'line' },
+        { value: 'WindSpeedAvg', label: 'Avg. Wind Speed (m/s)', color: '#e67e22', type: 'line' },
+        { value: 'rainfall1h', label: 'Rainfall - 1 Hour (mm)', color: '#27ae60', type: 'bar' },
+        { value: 'rainfall24h', label: 'Rainfall - 24 Hours (mm)', color: '#3498db', type: 'bar' },
+    ];
+
+    // Find the full configuration for the currently selected parameter
+    const selectedParamConfig = parameterOptions.find(p => p.value === selectedParameter);
+
+    // Function to trigger the data fetch
+    const handleFetchData = () => {
+        onFetchHistoricalData(selectedDays); // We fetch all data, then display the selected parameter
+    };
+
+    // Fetch data when the component first loads
+    useEffect(() => {
+        handleFetchData();
+    }, []);
+
+    const formatTimestamp = (timestamp) => {
+        try {
+            const date = new Date(timestamp);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch (error) {
+            return timestamp;
+        }
+    };
+
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    backdropFilter: 'blur(10px)'
+                }}>
+                    <p style={{ margin: 0, fontWeight: 'bold' }}>{formatTimestamp(label)}</p>
+                    {payload.map((entry, index) => (
+                        <p key={index} style={{ margin: '2px 0', color: entry.color }}>
+                            {entry.name}: {entry.value}
+                        </p>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
+    if (historicalLoading) {
+        return (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                <p>Loading historical weather data...</p>
+            </div>
+        );
+    }
+
+    if (historicalError) {
+        return (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#e74c3c' }}>
+                <p>❌ {historicalError}</p>
+                <button onClick={handleFetchData} className="submit-btn" style={{ marginTop: '1rem' }}>
+                    Retry
+                </button>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            {/* --- UPDATED: Controls Section --- */}
+            <div style={{ 
+                display: 'flex', 
+                gap: '1rem', 
+                marginBottom: '1.5rem',
+                padding: '1rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                borderRadius: '12px',
+                flexWrap: 'wrap',
+                alignItems: 'center'
+            }}>
+                {/* Days Range Selector */}
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                        📅 Date Range:
+                    </label>
+                    <select 
+                        value={selectedDays} 
+                        onChange={(e) => setSelectedDays(parseInt(e.target.value))}
+                        style={{ padding: '0.5rem', borderRadius: '8px', border: '2px solid rgba(102, 126, 234, 0.2)', backgroundColor: 'white' }}>
+                        
+                        <option value={3}>Last 3 Days</option>
+                        <option value={5}>Last 5 Days</option>
+                        <option value={7}>Last 7 Days</option>
+                        <option value={15}>Last 15 Days</option>
+                        <option value={30}>Last 30 Days</option>
+                    </select>
+                </div>
+
+                {/* NEW: Parameter Selector */}
+                <div>
+                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                        📊 Parameter:
+                    </label>
+                    <select 
+                        value={selectedParameter} 
+                        onChange={(e) => setSelectedParameter(e.target.value)}
+                        style={{ padding: '0.5rem', borderRadius: '8px', border: '2px solid rgba(102, 126, 234, 0.2)', backgroundColor: 'white' }}>
+                        {parameterOptions.map(option => (
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                    </select>
+                </div>
+                
+                <button 
+                    onClick={handleFetchData}
+                    className="submit-btn"
+                    disabled={historicalLoading}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', height: 'fit-content' }}
+                >
+                    📊 Update Chart
+                </button>
+            </div>
+
+            {/* --- UPDATED: Single Dynamic Chart Section --- */}
+            {historicalData && historicalData.length > 0 ? (
+                <div>
+                    <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(102, 126, 234, 0.1)', borderRadius: '8px' }}>
+                        <strong>📈 Showing {historicalData.length} records</strong> for{' '}
+                        <strong>{selectedParamConfig.label}</strong>
+                    </div>
+
+                    <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '12px', padding: '1rem' }}>
+                        <ResponsiveContainer width="100%" height={350}>
+                            {/* Conditionally render a Line or Bar chart based on config */}
+                            {selectedParamConfig.type === 'line' ? (
+                                <LineChart data={historicalData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(102, 126, 234, 0.1)" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTimestamp} angle={-45} textAnchor="end" height={60} fontSize={12} />
+                                    <YAxis />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend />
+                                    <Line 
+                                        type="monotone" 
+                                        dataKey={selectedParamConfig.value} 
+                                        stroke={selectedParamConfig.color}
+                                        name={selectedParamConfig.label}
+                                        strokeWidth={2}
+                                        dot={{ r: 2 }}
+                                    />
+                                </LineChart>
+                            ) : (
+                                <BarChart data={historicalData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(102, 126, 234, 0.1)" />
+                                    <XAxis dataKey="timestamp" tickFormatter={formatTimestamp} angle={-45} textAnchor="end" height={60} fontSize={12} />
+                                    <YAxis />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Legend />
+                                    <Bar 
+                                        dataKey={selectedParamConfig.value} 
+                                        fill={selectedParamConfig.color}
+                                        name={selectedParamConfig.label}
+                                        radius={[2, 2, 0, 0]}
+                                    />
+                                </BarChart>
+                            )}
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
+                    <p>📈 No historical data available for the selected range.</p>
+                </div>
+            )}
+        </div>
+    );
+};
+
 // --- DATA REQUEST FORM COMPONENT ---
 const DataRequestForm = ({ onSubmit, loading }) => {
     const [formData, setFormData] = useState({
@@ -452,10 +655,10 @@ const DataRequestForm = ({ onSubmit, loading }) => {
             }}>
                 <strong>📋 Process:</strong>
                 <ol style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                    <li>Submit your request</li>
-                    <li>Admin receives email notification</li>
-                    <li>Admin reviews and approves</li>
-                    <li>Data sent to your email as CSV</li>
+                    <li>You submit a request through the system.</li>
+                    <li>The admin verifies your details.</li>
+                    <li>Once approved, your request is processed.</li>
+                    <li>You’ll receive the requested data in your email as a CSV file.</li>
                 </ol>
             </div>
         </div>
@@ -464,13 +667,20 @@ const DataRequestForm = ({ onSubmit, loading }) => {
 
 // --- SIDEBAR COMPONENT ---
 const Sidebar = ({ isOpen, onClose, activeTab, setActiveTab, ...props }) => {
+    const getTabTitle = () => {
+        switch (activeTab) {
+            case 'live': return '📊 Live Weather Data';
+            case 'historical': return '📈 Historical Data';
+            case 'request': return '📥 Request Historical Data';
+            default: return '📊 Weather Data';
+        }
+    };
+
     return (
         <div className={`sidebar ${isOpen ? 'open' : ''}`}>
             <div className="sidebar-header">
                 <div className="sidebar-title">
-                    <h3>
-                        {activeTab === 'live' ? '📊 Live Weather Data' : '📥 Request Historical Data'}
-                    </h3>
+                    <h3>{getTabTitle()}</h3>
                 </div>
                 <button className="close-btn" onClick={onClose} title="Close sidebar">
                     ×
@@ -483,6 +693,12 @@ const Sidebar = ({ isOpen, onClose, activeTab, setActiveTab, ...props }) => {
                     onClick={() => setActiveTab('live')}
                 >
                     📊 Live Data
+                </button>
+                <button
+                    className={activeTab === 'historical' ? 'active' : ''}
+                    onClick={() => setActiveTab('historical')}
+                >
+                    📈 Charts
                 </button>
                 <button
                     className={activeTab === 'request' ? 'active' : ''}
@@ -500,6 +716,14 @@ const Sidebar = ({ isOpen, onClose, activeTab, setActiveTab, ...props }) => {
                         error={props.error}
                     />
                 )}
+                {activeTab === 'historical' && (
+                    <HistoricalCharts
+                        onFetchHistoricalData={props.onFetchHistoricalData}
+                        historicalData={props.historicalData}
+                        historicalLoading={props.historicalLoading}
+                        historicalError={props.historicalError}
+                    />
+                )}
                 {activeTab === 'request' && (
                     <DataRequestForm
                         onSubmit={props.handleDataRequest}
@@ -514,7 +738,7 @@ const Sidebar = ({ isOpen, onClose, activeTab, setActiveTab, ...props }) => {
 // --- MAIN APP COMPONENT ---
 const App = () => {
     // State for navigation
-    const [currentView, setCurrentView] = useState('homepage'); // 'homepage' or 'weather'
+    const [currentView, setCurrentView] = useState('homepage');
     
     // Weather app state
     const [weatherData, setWeatherData] = useState(null);
@@ -524,6 +748,11 @@ const App = () => {
     const [requestLoading, setRequestLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('live');
+
+    // NEW: Historical data state
+    const [historicalData, setHistoricalData] = useState([]);
+    const [historicalLoading, setHistoricalLoading] = useState(false);
+    const [historicalError, setHistoricalError] = useState(null);
 
     const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -558,6 +787,41 @@ const App = () => {
         }
     }, [API_URL]);
 
+    // NEW: Fetch historical data function
+    const fetchHistoricalData = useCallback(async (days = 5, parameter = 'all') => {
+        try {
+            setHistoricalLoading(true);
+            setHistoricalError(null);
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+            const response = await fetch(`${API_URL}/historical-data?days=${days}&parameter=${parameter}`, {
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}: Request failed`);
+            }
+
+            const data = await response.json();
+            setHistoricalData(data.data || []);
+            
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                setHistoricalError('Request timeout - Please try again');
+            } else {
+                setHistoricalError(err.message);
+            }
+            console.error('Historical data fetch error:', err);
+        } finally {
+            setHistoricalLoading(false);
+        }
+    }, [API_URL]);
+
     useEffect(() => {
         fetchWeatherData();
         const interval = setInterval(fetchWeatherData, 30000);
@@ -589,15 +853,15 @@ const App = () => {
             }
 
             showNotification(
-                '✅ Success! Your request has been submitted for admin approval.',
+                'Success! Your request has been submitted for admin approval.',
                 'success'
             );
             setIsSidebarOpen(false);
         } catch (err) {
             if (err.name === 'AbortError') {
-                showNotification('⏱️ Request timeout - Please try again', 'error');
+                showNotification('Request timeout - Please try again', 'error');
             } else {
-                showNotification(`❌ Error: ${err.message}`, 'error');
+                showNotification(`Error: ${err.message}`, 'error');
             }
             console.error('Data request error:', err);
         } finally {
@@ -614,7 +878,7 @@ const App = () => {
     const navigateToWeather = (tab = 'live') => {
         setCurrentView('weather');
         setActiveTab(tab);
-        if (tab === 'request') {
+        if (tab === 'request' || tab === 'historical') {
             setIsSidebarOpen(true);
         }
     };
@@ -634,6 +898,7 @@ const App = () => {
         <div className="app-container">
             <Header
                 onLiveDataClick={() => openSidebarWithTab('live')}
+                onHistoricalChartsClick={() => openSidebarWithTab('historical')}
                 onRequestDataClick={() => openSidebarWithTab('request')}
                 onHomeClick={navigateToHome}
                 isConnected={!!weatherData && !error}
@@ -650,6 +915,10 @@ const App = () => {
                 error={error}
                 handleDataRequest={handleDataRequest}
                 requestLoading={requestLoading}
+                onFetchHistoricalData={fetchHistoricalData}
+                historicalData={historicalData}
+                historicalLoading={historicalLoading}
+                historicalError={historicalError}
             />
 
             <MapComponent
