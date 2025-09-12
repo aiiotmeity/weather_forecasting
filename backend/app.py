@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, make_response
 from flask_cors import CORS
 import boto3
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -25,7 +25,7 @@ EMAIL_CONFIG = {
     'smtp_port': 587,
     'sender_email': os.getenv('SENDER_EMAIL'),
     'sender_password': os.getenv('SENDER_PASSWORD'),
-    'admin_email': os.getenv('ADMIN_EMAIL'),
+    'admin_email': os.getenv('ADMIN_EMAIL'), ## <-- NEW: Get admin email
     'sender_name': 'Weather Station - Adishankara Engineering College'
 }
 
@@ -42,104 +42,10 @@ def send_email(message):
     server.send_message(message)
     server.quit()
 
-@app.route('/api/historical-data', methods=['GET'])
-def get_historical_data():
-    """
-    NEW ENDPOINT: Get historical weather data for visualization
-    Parameters:
-    - days: number of days to fetch (default: 5, max: 30)
-    - parameter: specific parameter to fetch (optional, default: all)
-    """
-    try:
-        days = int(request.args.get('days', 5))
-        parameter = request.args.get('parameter', 'all')
-        
-        # Limit to prevent excessive data requests
-        if days > 30:
-            days = 30
-        if days < 1:
-            days = 1
-            
-        # Calculate date range
-        end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=days-1)
-        
-        table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
-        
-        # Query data within date range
-        scan_response = table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('data.decoded_payload.date').between(
-                start_date.strftime('%Y-%m-%d'), 
-                end_date.strftime('%Y-%m-%d')
-            )
-        )
-        
-        items = scan_response.get('Items', [])
-        
-        if not items:
-            return jsonify({"error": "No historical data found for the specified range"}), 404
-        
-        # Sort by date and time
-        sorted_items = sorted(items, key=lambda x: (
-            x['data']['decoded_payload'].get('date', ''),
-            x['data']['decoded_payload'].get('time', '')
-        ))
-        
-        # Format data for charts
-        formatted_data = []
-        for item in sorted_items:
-            payload = item['data']['decoded_payload']
-            
-            # Create timestamp for chart
-            date_str = payload.get('date', '')
-            time_str = payload.get('time', '')
-            if date_str and time_str:
-                try:
-                    timestamp = f"{date_str} {time_str}"
-                    datetime_obj = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
-                    
-                    data_point = {
-                        'timestamp': timestamp,
-                        'date': date_str,
-                        'time': time_str,
-                        'datetime': datetime_obj.isoformat()
-                    }
-                    
-                    # Add all weather parameters
-                    weather_params = [
-                        'temperature', 'humidity', 'airPressure', 
-                        'rainfall1h', 'rainfall24h', 'windDirection', 
-                        'WindSpeedAvg', 'windSpeedMax'
-                    ]
-                    
-                    for param in weather_params:
-                        value = payload.get(param)
-                        if value is not None:
-                            data_point[param] = float(value) if isinstance(value, Decimal) else value
-                    
-                    formatted_data.append(data_point)
-                    
-                except ValueError:
-                    continue  # Skip invalid date/time entries
-        
-        return jsonify({
-            'data': formatted_data,
-            'total_records': len(formatted_data),
-            'date_range': {
-                'start': start_date.strftime('%Y-%m-%d'),
-                'end': end_date.strftime('%Y-%m-%d'),
-                'days': days
-            }
-        })
-        
-    except Exception as e:
-        print(f"Error fetching historical data: {str(e)}")
-        return jsonify({"error": "Failed to fetch historical weather data"}), 500
-
 @app.route('/api/request-data', methods=['POST'])
 def request_data():
     """
-    STEP 1: USER SUBMITS REQUEST
+    ## <-- STEP 1: USER SUBMITS REQUEST -->
     This function now saves the request with a 'pending' status
     and sends a notification email to the ADMIN for approval.
     """
@@ -160,7 +66,7 @@ def request_data():
             'data_parameters': data.get('data_type'),
             'purpose': data.get('purpose', 'N/A'),
             'request_timestamp': datetime.now(timezone.utc).isoformat(),
-            'status': 'pending'
+            'status': 'pending'  # <-- NEW: Set initial status
         }
         requests_table.put_item(Item=request_details)
         print(f"Successfully logged pending request {request_id} for {data['email']}")
@@ -197,7 +103,7 @@ def request_data():
 @app.route('/api/approve-request', methods=['GET'])
 def approve_request():
     """
-    STEP 2: ADMIN APPROVES REQUEST
+    ## <-- STEP 2: ADMIN APPROVES REQUEST -->
     This new endpoint is triggered when the admin clicks the approval link.
     It fetches the data and sends it to the original user.
     """
@@ -278,6 +184,7 @@ def approve_request():
         print(f"Error approving request {request_id}: {str(e)}")
         return "An error occurred while processing the approval.", 500
 
+# Other routes like /api/weather and /api/status remain unchanged
 @app.route('/api/weather')
 def get_weather_data():
     try:
