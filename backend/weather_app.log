@@ -1,0 +1,86 @@
+2025-09-11 15:23:32,622 - INFO - Starting Weather Monitoring System API...
+2025-09-11 15:23:32,622 - INFO - CORS enabled for: default origins
+2025-09-11 15:23:32,629 - WARNING -  * Debugger is active!
+2025-09-11 15:23:32,631 - INFO -  * Debugger PIN: 561-287-988
+2025-09-11 15:23:33,752 - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+2025-09-11 15:23:33,752 - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+2025-09-11 15:23:33,752 - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+2025-09-11 15:23:34,944 - WARNING - No weather data found in database
+2025-09-11 15:23:34,947 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:34] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:34,979 - WARNING - No weather data found in database
+2025-09-11 15:23:34,982 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:34] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:34,998 - WARNING - No weather data found in database
+2025-09-11 15:23:35,000 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:35] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:35,979 - WARNING - No weather data found in database
+2025-09-11 15:23:35,983 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:35] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:36,051 - WARNING - No weather data found in database
+2025-09-11 15:23:36,053 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:36] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:36,717 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\app.py', reloading
+2025-09-11 15:23:36,722 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\app.py', reloading
+2025-09-11 15:23:37,355 - WARNING - No weather data found in database
+2025-09-11 15:23:37,356 - INFO - 127.0.0.1 - - [11/Sep/2025 15:23:37] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:23:37,992 - INFO - Starting Weather Monitoring System API...
+2025-09-11 15:23:37,993 - INFO - CORS enabled for: default origins
+2025-09-11 15:23:37,999 - WARNING -  * Debugger is active!
+2025-09-11 15:23:38,001 - INFO -  * Debugger PIN: 561-287-988
+2025-09-11 15:24:03,686 - INFO - Found credentials in shared credentials file: ~/.aws/credentials
+2025-09-11 15:24:04,755 - WARNING - No weather data found in database
+2025-09-11 15:24:04,758 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:04] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:49,377 - WARNING - No weather data found in database
+2025-09-11 15:24:49,381 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:49,728 - WARNING - No weather data found in database
+2025-09-11 15:24:49,730 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:49,764 - WARNING - No weather data found in database
+2025-09-11 15:24:49,767 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:50,717 - WARNING - No weather data found in database
+2025-09-11 15:24:50,721 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:50] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:50,786 - WARNING - No weather data found in database
+2025-09-11 15:24:50,787 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:50] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:24:51,794 - WARNING - No weather data found in database
+2025-09-11 15:24:51,797 - INFO - 127.0.0.1 - - [11/Sep/2025 15:24:51] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:07,650 - WARNING - No weather data found in database
+2025-09-11 15:25:07,653 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:07] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:34,421 - WARNING - No weather data found in database
+2025-09-11 15:25:34,423 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:34] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:50,455 - WARNING - No weather data found in database
+2025-09-11 15:25:50,456 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:50] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:50,459 - WARNING - No weather data found in database
+2025-09-11 15:25:50,460 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:50] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:50,494 - WARNING - No weather data found in database
+2025-09-11 15:25:50,496 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:50] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:53,592 - WARNING - No weather data found in database
+2025-09-11 15:25:53,593 - WARNING - No weather data found in database
+2025-09-11 15:25:53,594 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:53] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:25:53,596 - INFO - 127.0.0.1 - - [11/Sep/2025 15:25:53] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:04,494 - WARNING - No weather data found in database
+2025-09-11 15:26:04,498 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:04] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:27,796 - WARNING - No weather data found in database
+2025-09-11 15:26:27,798 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:27] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:33,785 - WARNING - No weather data found in database
+2025-09-11 15:26:33,788 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:33] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:49,549 - WARNING - No weather data found in database
+2025-09-11 15:26:49,550 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:49,927 - WARNING - No weather data found in database
+2025-09-11 15:26:49,927 - WARNING - No weather data found in database
+2025-09-11 15:26:49,929 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:49,930 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:49] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:51,094 - WARNING - No weather data found in database
+2025-09-11 15:26:51,096 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:51] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:51,562 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:51] "[33mGET /api/placeholder/48/48 HTTP/1.1[0m" 404 -
+2025-09-11 15:26:51,874 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:51] "[33mGET /logo192.png HTTP/1.1[0m" 404 -
+2025-09-11 15:26:52,656 - WARNING - No weather data found in database
+2025-09-11 15:26:52,659 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:52] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:53,116 - WARNING - No weather data found in database
+2025-09-11 15:26:53,118 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:53] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:26:54,243 - WARNING - No weather data found in database
+2025-09-11 15:26:54,245 - INFO - 127.0.0.1 - - [11/Sep/2025 15:26:54] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:27:23,019 - WARNING - No weather data found in database
+2025-09-11 15:27:23,022 - INFO - 127.0.0.1 - - [11/Sep/2025 15:27:23] "[33mGET /api/weather HTTP/1.1[0m" 404 -
+2025-09-11 15:27:38,550 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\venv\\Lib\\site-packages\\werkzeug\\datastructures\\structures.py', reloading
+2025-09-11 15:27:39,644 - INFO - Starting Weather Monitoring System API...
+2025-09-11 15:27:39,644 - INFO - CORS enabled for: default origins
+2025-09-11 15:27:39,651 - WARNING -  * Debugger is active!
+2025-09-11 15:27:39,653 - INFO -  * Debugger PIN: 561-287-988
+2025-09-11 15:27:48,106 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\app.py', reloading
+2025-09-11 15:27:48,111 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\app.py', reloading
+2025-09-11 15:27:48,113 - INFO -  * Detected change in 'C:\\weather-station-app\\backend\\app.py', reloading
