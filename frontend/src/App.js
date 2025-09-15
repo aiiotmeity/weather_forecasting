@@ -60,7 +60,7 @@ const Header = ({ onLiveDataClick, onRequestDataClick, onHistoricalChartsClick, 
                     Home
                 </span>
                 <span style={{ margin: '0 8px' }}>›</span>
-                <span>Weather Dashboard</span>
+                <span></span>
             </div>
 
             <div className="header-logo" onClick={onHomeClick} style={{ cursor: 'pointer' }}>
