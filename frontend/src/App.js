@@ -57,9 +57,9 @@ const Header = ({ onLiveDataClick, onRequestDataClick, onHistoricalChartsClick, 
                     onClick={onHomeClick}
                     style={{ cursor: 'pointer', textDecoration: 'underline' }}
                 >
-                    Home
+                    
                 </span>
-                <span style={{ margin: '0 8px' }}>›</span>
+                <span style={{ margin: '0 8px' }}></span>
                 <span></span>
             </div>
 
@@ -285,15 +285,11 @@ const WeatherDisplay = ({ data, loading, error }) => {
 };
 
 // --- NEW: HISTORICAL CHARTS COMPONENT ---
-// --- NEW: HISTORICAL CHARTS COMPONENT ---
 const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoading, historicalError }) => {
-    // State to manage user selections
     const [selectedDays, setSelectedDays] = useState(5);
-    // NEW: State for the single parameter selection. Default to 'temperature'.
     const [selectedParameter, setSelectedParameter] = useState('temperature');
+    const [debugInfo, setDebugInfo] = useState(null);
 
-    // Configuration for each selectable parameter
-    // This makes it easy to define the label, color, and chart type for each option
     const parameterOptions = [
         { value: 'temperature', label: 'Temperature (°C)', color: '#e74c3c', type: 'line' },
         { value: 'humidity', label: 'Humidity (%)', color: '#3498db', type: 'line' },
@@ -303,15 +299,24 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
         { value: 'rainfall24h', label: 'Rainfall - 24 Hours (mm)', color: '#3498db', type: 'bar' },
     ];
 
-    // Find the full configuration for the currently selected parameter
     const selectedParamConfig = parameterOptions.find(p => p.value === selectedParameter);
 
-    // Function to trigger the data fetch
-    const handleFetchData = () => {
-        onFetchHistoricalData(selectedDays); // We fetch all data, then display the selected parameter
+    const handleFetchData = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/historical-data?days=${selectedDays}`);
+            const result = await response.json();
+            
+            if (!response.ok) {
+                setDebugInfo(result.debug_info || null);
+                throw new Error(result.error || 'Failed to fetch data');
+            }
+            
+            onFetchHistoricalData(selectedDays);
+        } catch (error) {
+            console.error('Fetch error:', error);
+        }
     };
 
-    // Fetch data when the component first loads
     useEffect(() => {
         handleFetchData();
     }, []);
@@ -363,10 +368,44 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
 
     if (historicalError) {
         return (
-            <div style={{ textAlign: 'center', padding: '2rem', color: '#e74c3c' }}>
-                <p>❌ {historicalError}</p>
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+                <div style={{ color: '#e74c3c', marginBottom: '1rem' }}>
+                    <h4>Data Not Available</h4>
+                    <p>{historicalError}</p>
+                </div>
+                
+                {debugInfo && (
+                    <div style={{ 
+                        backgroundColor: '#f8f9fa', 
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        padding: '1rem',
+                        marginBottom: '1rem',
+                        textAlign: 'left'
+                    }}>
+                        <h5>Debug Information:</h5>
+                        <ul>
+                            <li><strong>Requested Range:</strong> {debugInfo.requested_range}</li>
+                            <li><strong>Records in Database:</strong> {debugInfo.total_records_in_table}</li>
+                            {debugInfo.sample_date_formats_found && debugInfo.sample_date_formats_found.length > 0 && (
+                                <li><strong>Sample Date Formats Found:</strong> {debugInfo.sample_date_formats_found.join(', ')}</li>
+                            )}
+                        </ul>
+                    </div>
+                )}
+                
+                <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
+                    <h5>Possible Solutions:</h5>
+                    <ol style={{ textAlign: 'left', paddingLeft: '1.5rem' }}>
+                        <li>Check if your weather station is collecting data</li>
+                        <li>Verify the date range - try selecting a smaller range</li>
+                        <li>Check your database connection</li>
+                        <li>Contact the system administrator</li>
+                    </ol>
+                </div>
+                
                 <button onClick={handleFetchData} className="submit-btn" style={{ marginTop: '1rem' }}>
-                    Retry
+                    Try Again
                 </button>
             </div>
         );
@@ -374,7 +413,6 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
 
     return (
         <div>
-            {/* --- UPDATED: Controls Section --- */}
             <div style={{ 
                 display: 'flex', 
                 gap: '1rem', 
@@ -385,16 +423,15 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
                 flexWrap: 'wrap',
                 alignItems: 'center'
             }}>
-                {/* Days Range Selector */}
                 <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        📅 Date Range:
+                        Date Range:
                     </label>
                     <select 
                         value={selectedDays} 
                         onChange={(e) => setSelectedDays(parseInt(e.target.value))}
                         style={{ padding: '0.5rem', borderRadius: '8px', border: '2px solid rgba(102, 126, 234, 0.2)', backgroundColor: 'white' }}>
-                        
+                        <option value={1}>Last 1 Day</option>
                         <option value={3}>Last 3 Days</option>
                         <option value={5}>Last 5 Days</option>
                         <option value={7}>Last 7 Days</option>
@@ -403,10 +440,9 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
                     </select>
                 </div>
 
-                {/* NEW: Parameter Selector */}
                 <div>
                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        📊 Parameter:
+                        Parameter:
                     </label>
                     <select 
                         value={selectedParameter} 
@@ -424,21 +460,19 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
                     disabled={historicalLoading}
                     style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', height: 'fit-content' }}
                 >
-                    📊 Update Chart
+                    Update Chart
                 </button>
             </div>
 
-            {/* --- UPDATED: Single Dynamic Chart Section --- */}
             {historicalData && historicalData.length > 0 ? (
                 <div>
                     <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: 'rgba(102, 126, 234, 0.1)', borderRadius: '8px' }}>
-                        <strong>📈 Showing {historicalData.length} records</strong> for{' '}
+                        <strong>Showing {historicalData.length} records</strong> for{' '}
                         <strong>{selectedParamConfig.label}</strong>
                     </div>
 
                     <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '12px', padding: '1rem' }}>
                         <ResponsiveContainer width="100%" height={350}>
-                            {/* Conditionally render a Line or Bar chart based on config */}
                             {selectedParamConfig.type === 'line' ? (
                                 <LineChart data={historicalData}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(102, 126, 234, 0.1)" />
@@ -475,7 +509,7 @@ const HistoricalCharts = ({ onFetchHistoricalData, historicalData, historicalLoa
                 </div>
             ) : (
                 <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}>
-                    <p>📈 No historical data available for the selected range.</p>
+                    <p>No historical data available for the selected range.</p>
                 </div>
             )}
         </div>

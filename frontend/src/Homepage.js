@@ -131,10 +131,9 @@ const Homepage = ({ onNavigateToWeather }) => {
       <section id="home" className="hero-section">
         <div className="hero-container">
           <div className="hero-content">
-            <h2>Meteorological Research & Data Center</h2>
+            <h2>Meteorological Research and Development Sector for AI-IoT Innovation</h2>
             <p>
-              Real-time meteorological data collection and analysis for research, 
-              education, and public service in the Kalady region
+             Real-time data from the weather station at Adi Shankara Institute of Engineering and Technology
             </p>
 
 
