@@ -769,3 +769,65 @@ html {
     color: black;
   }
 }
+
+/* Add these styles to the top of your Homepage.css file */
+
+/* Ensure html and body allow scrolling */
+html, body {
+  height: auto !important;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  scroll-behavior: smooth;
+}
+
+/* Ensure the homepage container allows scrolling */
+.homepage {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: visible !important;
+  position: relative;
+}
+
+/* Fix for any parent containers that might be restricting height */
+#root {
+  height: auto !important;
+  min-height: 100vh;
+  overflow: visible !important;
+}
+
+/* Ensure sections have proper spacing and don't overlap */
+.homepage section {
+  position: relative;
+  z-index: 1;
+}
+
+/* Fix sticky nav if it's causing issues */
+.nav-bar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+}
+
+/* Debug: Add temporary background colors to see section boundaries */
+.hero-section {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.95) 0%, rgba(30, 58, 138, 0.95) 100%) !important;
+}
+
+.features-section {
+  background: var(--white) !important;
+}
+
+.services-section {
+  background: var(--bg-light) !important;
+}
+
+.contact-section {
+  background: var(--white) !important;
+}
+
+.footer {
+  background: var(--text-dark) !important;
+}

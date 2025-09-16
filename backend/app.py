@@ -45,13 +45,10 @@ def send_email(message):
 @app.route('/api/historical-data', methods=['GET'])
 def get_historical_data():
     """
-    NEW ENDPOINT: Get historical weather data for visualization
-    Parameters:
-    - days: number of days to fetch (default: 5, max: 30)
-    - parameter: specific parameter to fetch (optional, default: all)
+    ENHANCED with debugging: Get historical weather data for visualization
     """
     try:
-        days = int(request.args.get('days', 5))
+        days = int(request.args.get('days', 10))
         parameter = request.args.get('parameter', 'all')
         
         # Limit to prevent excessive data requests
@@ -64,22 +61,112 @@ def get_historical_data():
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=days-1)
         
+        print(f"DEBUG: Searching for data between {start_date.strftime('%Y-%m-%d')} and {end_date.strftime('%Y-%m-%d')}")
+        
         table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
         
-        # Query data within date range
-        scan_response = table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('data.decoded_payload.date').between(
-                start_date.strftime('%Y-%m-%d'), 
-                end_date.strftime('%Y-%m-%d')
-            )
-        )
+        # FIRST: Try to scan without filter to see what data exists
+        print("DEBUG: Scanning table to see available data...")
+        sample_scan = table.scan(Limit=5)
+        sample_items = sample_scan.get('Items', [])
         
-        items = scan_response.get('Items', [])
+        print(f"DEBUG: Found {len(sample_items)} sample items")
+        for i, item in enumerate(sample_items):
+            print(f"DEBUG: Sample item {i+1} structure: {json.dumps(item, cls=DecimalEncoder, indent=2)}")
+        
+        # Check if the expected path exists
+        if sample_items:
+            first_item = sample_items[0]
+            if 'data' in first_item:
+                if 'decoded_payload' in first_item['data']:
+                    if 'date' in first_item['data']['decoded_payload']:
+                        print(f"DEBUG: Found date field with value: {first_item['data']['decoded_payload']['date']}")
+                    else:
+                        print("DEBUG: 'date' field not found in decoded_payload")
+                        print(f"DEBUG: Available fields in decoded_payload: {list(first_item['data']['decoded_payload'].keys())}")
+                else:
+                    print("DEBUG: 'decoded_payload' not found in data")
+                    print(f"DEBUG: Available fields in data: {list(first_item['data'].keys())}")
+            else:
+                print("DEBUG: 'data' field not found in item")
+                print(f"DEBUG: Available top-level fields: {list(first_item.keys())}")
+        
+        # Now try the original query
+        try:
+            query_response = table.query(
+                KeyConditionExpression=Key('device_id').eq('weather-v2') & Key('date').between(
+                    start_date.strftime('%Y-%m-%d'),
+                    end_date.strftime('%Y-%m-%d')
+                )
+            )
+            items = query_response.get('Items', [])
+            print(f"DEBUG: Filtered query returned {len(items)} items")
+            
+        except Exception as filter_error:
+            print(f"DEBUG: Filter query failed: {str(filter_error)}")
+            # Try alternative date formats
+            date_formats = ['%Y/%m/%d', '%d-%m-%Y', '%m-%d-%Y']
+            items = []
+            
+            for date_format in date_formats:
+                try:
+                    print(f"DEBUG: Trying date format: {date_format}")
+                    
+                    query_response = table.query(
+                        KeyConditionExpression=Key('device_id').eq('weather-v2') & Key('date').between(
+                            start_date.strftime('%Y-%m-%d'),
+                            end_date.strftime('%Y-%m-%d')
+                        )
+                    )
+                    items = query_response.get('Items', [])
+
+                    if items:
+                        print(f"DEBUG: Success with format {date_format}! Found {len(items)} items")
+                        break
+                except Exception as e:
+                    print(f"DEBUG: Format {date_format} failed: {str(e)}")
+                    continue
         
         if not items:
-            return jsonify({"error": "No historical data found for the specified range"}), 404
+            # Try scanning all data and filtering in Python
+            print("DEBUG: Trying client-side filtering...")
+            all_scan = table.scan()
+            all_items = all_scan.get('Items', [])
+            print(f"DEBUG: Total items in table: {len(all_items)}")
+            
+            # Filter in Python
+            items = []
+            for item in all_items:
+                try:
+                    item_date_str = item['data']['decoded_payload'].get('date', '')
+                    if item_date_str:
+                        # Try parsing different date formats
+                        item_date = None
+                        for fmt in ['%Y-%m-%d', '%Y/%m/%d', '%d-%m-%Y', '%m-%d-%Y']:
+                            try:
+                                item_date = datetime.strptime(item_date_str, fmt).date()
+                                break
+                            except ValueError:
+                                continue
+                        
+                        if item_date and start_date <= item_date <= end_date:
+                            items.append(item)
+                except (KeyError, TypeError):
+                    continue
+            
+            print(f"DEBUG: Client-side filtering found {len(items)} items")
         
-        # Sort by date and time
+        if not items:
+            return jsonify({
+                "error": "No historical data found for the specified range",
+                "debug_info": {
+                    "requested_range": f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
+                    "total_records_in_table": len(sample_items) if 'sample_items' in locals() else 0,
+                    "sample_date_formats_found": [item['data']['decoded_payload'].get('date', 'NO_DATE') for item in sample_items[:3]] if sample_items else []
+                }
+            }), 404
+        
+        # Rest of your existing code for processing items...
         sorted_items = sorted(items, key=lambda x: (
             x['data']['decoded_payload'].get('date', ''),
             x['data']['decoded_payload'].get('time', '')
@@ -119,8 +206,11 @@ def get_historical_data():
                     
                     formatted_data.append(data_point)
                     
-                except ValueError:
-                    continue  # Skip invalid date/time entries
+                except ValueError as e:
+                    print(f"DEBUG: Date parsing error for {timestamp}: {str(e)}")
+                    continue
+        
+        print(f"DEBUG: Successfully formatted {len(formatted_data)} data points")
         
         return jsonify({
             'data': formatted_data,
@@ -133,8 +223,10 @@ def get_historical_data():
         })
         
     except Exception as e:
-        print(f"Error fetching historical data: {str(e)}")
-        return jsonify({"error": "Failed to fetch historical weather data"}), 500
+        print(f"ERROR: Exception in get_historical_data: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to fetch historical weather data: {str(e)}"}), 500
 
 @app.route('/api/request-data', methods=['POST'])
 def request_data():
@@ -220,12 +312,10 @@ def approve_request():
         # Fetch weather data
         weather_table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
         scan_response = weather_table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('data.decoded_payload.date').between(
-                request_details['start_date'], request_details['end_date']
-            )
+            FilterExpression=boto3.dynamodb.conditions.Attr('data.decoded_payload.date').between(start_date, end_date)
         )
         items = scan_response.get('Items', [])
-        
+        print("Scan items:", items)
         if not items:
             # Update status to approved even if no data, to prevent re-runs
             requests_table.update_item(
