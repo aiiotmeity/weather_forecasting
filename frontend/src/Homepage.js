@@ -388,20 +388,40 @@ const Homepage = ({ onNavigateToWeather }) => {
             </div>
 
             <div className="footer-section">
-              <h4>Institution</h4>
-              <ul className="footer-links">
-                <li><a href="https://www.adishankara.ac.in" target="_blank" rel="noopener noreferrer">Adishankara Engineering College</a></li>
-                <li><a href="https://www.india.gov.in" target="_blank" rel="noopener noreferrer">
-                Govt. of India
-              </a></li>
-              </ul>
-            </div>
+  <h3>About WeatherSense</h3>
+  <p className="footer-text">
+    Smart Meteorological & Air Quality Monitoring Platform
+  </p>
+
+  <div className="social-links">
+    <a href="https://www.linkedin.com/in/aiiot-asiet-b22302308" 
+        className="social-link" 
+        target="_blank" 
+        rel="noopener noreferrer">
+        <i className="fab fa-linkedin-in"></i>
+    </a>
+    
+    <a href="https://www.instagram.com/aiiot_adishankara?igsh=aXY4bXQ2cjVhYWM2"
+        className="social-link"
+        target="_blank"
+        rel="noopener noreferrer">
+        <i className="fab fa-instagram"></i>
+    </a>
+    <a href="#" className="social-link">
+      <i className="fab fa-facebook-f"></i>
+    </a>
+    <a href="#" className="social-link">
+      <i className="fab fa-twitter"></i>
+    </a>
+  </div>
+</div>
+
+
           </div>
 
           <div className="footer-bottom">
             <p>
-              © {new Date().getFullYear()} Adishankara Engineering College Weather Monitoring System. 
-              All rights reserved.
+              © {new Date().getFullYear()} All rights reserved. Developed and managed by Center for AI & IoT Innovation, Adi Shankara Institute of Engineering and Technology.
             </p>
           </div>
         </div>

@@ -6,6 +6,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
+from boto3.dynamodb.conditions import Key, Attr
 from email import encoders
 import csv
 import io
@@ -42,191 +43,67 @@ def send_email(message):
     server.send_message(message)
     server.quit()
 
+# In app.py
+
+# In app.py
+
 @app.route('/api/historical-data', methods=['GET'])
 def get_historical_data():
-    """
-    ENHANCED with debugging: Get historical weather data for visualization
-    """
     try:
-        days = int(request.args.get('days', 10))
-        parameter = request.args.get('parameter', 'all')
-        
-        # Limit to prevent excessive data requests
-        if days > 30:
-            days = 30
-        if days < 1:
-            days = 1
-            
-        # Calculate date range
-        end_date = datetime.now().date()
-        start_date = end_date - timedelta(days=days-1)
-        
-        print(f"DEBUG: Searching for data between {start_date.strftime('%Y-%m-%d')} and {end_date.strftime('%Y-%m-%d')}")
-        
-        table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
-        
-        # FIRST: Try to scan without filter to see what data exists
-        print("DEBUG: Scanning table to see available data...")
-        sample_scan = table.scan(Limit=5)
-        sample_items = sample_scan.get('Items', [])
-        
-        print(f"DEBUG: Found {len(sample_items)} sample items")
-        for i, item in enumerate(sample_items):
-            print(f"DEBUG: Sample item {i+1} structure: {json.dumps(item, cls=DecimalEncoder, indent=2)}")
-        
-        # Check if the expected path exists
-        if sample_items:
-            first_item = sample_items[0]
-            if 'data' in first_item:
-                if 'decoded_payload' in first_item['data']:
-                    if 'date' in first_item['data']['decoded_payload']:
-                        print(f"DEBUG: Found date field with value: {first_item['data']['decoded_payload']['date']}")
-                    else:
-                        print("DEBUG: 'date' field not found in decoded_payload")
-                        print(f"DEBUG: Available fields in decoded_payload: {list(first_item['data']['decoded_payload'].keys())}")
-                else:
-                    print("DEBUG: 'decoded_payload' not found in data")
-                    print(f"DEBUG: Available fields in data: {list(first_item['data'].keys())}")
-            else:
-                print("DEBUG: 'data' field not found in item")
-                print(f"DEBUG: Available top-level fields: {list(first_item.keys())}")
-        
-        # Now try the original query
-        try:
-            query_response = table.query(
-                KeyConditionExpression=Key('device_id').eq('weather-v2') & Key('date').between(
-                    start_date.strftime('%Y-%m-%d'),
-                    end_date.strftime('%Y-%m-%d')
-                )
-            )
-            items = query_response.get('Items', [])
-            print(f"DEBUG: Filtered query returned {len(items)} items")
-            
-        except Exception as filter_error:
-            print(f"DEBUG: Filter query failed: {str(filter_error)}")
-            # Try alternative date formats
-            date_formats = ['%Y/%m/%d', '%d-%m-%Y', '%m-%d-%Y']
-            items = []
-            
-            for date_format in date_formats:
-                try:
-                    print(f"DEBUG: Trying date format: {date_format}")
-                    
-                    query_response = table.query(
-                        KeyConditionExpression=Key('device_id').eq('weather-v2') & Key('date').between(
-                            start_date.strftime('%Y-%m-%d'),
-                            end_date.strftime('%Y-%m-%d')
-                        )
-                    )
-                    items = query_response.get('Items', [])
+        days = int(request.args.get('days', 3))
+        station_id_from_request = request.args.get('station_id', 'weather-v2')
 
-                    if items:
-                        print(f"DEBUG: Success with format {date_format}! Found {len(items)} items")
-                        break
-                except Exception as e:
-                    print(f"DEBUG: Format {date_format} failed: {str(e)}")
-                    continue
-        
+        # --- FIX: Hardcode the device_id with the leading space to match the database ---
+        # This ensures we find the data. The long-term solution is to fix the data in DynamoDB.
+        actual_device_id_in_db = ' ' + station_id_from_request.strip()
+
+        end_date = datetime.now().date()
+        start_date = end_date - timedelta(days=days - 1)
+        start_date_str = start_date.strftime('%Y-%m-%d')
+        end_date_str = end_date.strftime('%Y-%m-%d')
+
+        table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
+
+        # --- FIX: Use Attr() for all scan filters and use the corrected device_id ---
+        filter_expression = Attr('device_id').eq(actual_device_id_in_db) & Attr('data.decoded_payload.date').between(start_date_str, end_date_str)
+
+        response = table.scan(FilterExpression=filter_expression)
+        items = response.get('Items', [])
+
+        while 'LastEvaluatedKey' in response:
+            response = table.scan(
+                FilterExpression=filter_expression,
+                ExclusiveStartKey=response['LastEvaluatedKey']
+            )
+            items.extend(response.get('Items', []))
+
         if not items:
-            # Try scanning all data and filtering in Python
-            print("DEBUG: Trying client-side filtering...")
-            all_scan = table.scan()
-            all_items = all_scan.get('Items', [])
-            print(f"DEBUG: Total items in table: {len(all_items)}")
-            
-            # Filter in Python
-            items = []
-            for item in all_items:
-                try:
-                    item_date_str = item['data']['decoded_payload'].get('date', '')
-                    if item_date_str:
-                        # Try parsing different date formats
-                        item_date = None
-                        for fmt in ['%Y-%m-%d', '%Y/%m/%d', '%d-%m-%Y', '%m-%d-%Y']:
-                            try:
-                                item_date = datetime.strptime(item_date_str, fmt).date()
-                                break
-                            except ValueError:
-                                continue
-                        
-                        if item_date and start_date <= item_date <= end_date:
-                            items.append(item)
-                except (KeyError, TypeError):
-                    continue
-            
-            print(f"DEBUG: Client-side filtering found {len(items)} items")
+            return jsonify({"error": f"No data found for station '{station_id_from_request}' in the last {days} days."}), 404
         
-        if not items:
-            return jsonify({
-                "error": "No historical data found for the specified range",
-                "debug_info": {
-                    "requested_range": f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}",
-                    "total_records_in_table": len(sample_items) if 'sample_items' in locals() else 0,
-                    "sample_date_formats_found": [item['data']['decoded_payload'].get('date', 'NO_DATE') for item in sample_items[:3]] if sample_items else []
-                }
-            }), 404
-        
-        # Rest of your existing code for processing items...
-        sorted_items = sorted(items, key=lambda x: (
-            x['data']['decoded_payload'].get('date', ''),
-            x['data']['decoded_payload'].get('time', '')
-        ))
-        
-        # Format data for charts
+        # Sort items by combining date and time into a comparable string
+        sorted_items = sorted(
+            items, 
+            key=lambda x: f"{x.get('data', {}).get('decoded_payload', {}).get('date', '')} {x.get('data', {}).get('decoded_payload', {}).get('time', '')}"
+        )
+
         formatted_data = []
         for item in sorted_items:
-            payload = item['data']['decoded_payload']
-            
-            # Create timestamp for chart
-            date_str = payload.get('date', '')
-            time_str = payload.get('time', '')
-            if date_str and time_str:
-                try:
-                    timestamp = f"{date_str} {time_str}"
-                    datetime_obj = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
-                    
-                    data_point = {
-                        'timestamp': timestamp,
-                        'date': date_str,
-                        'time': time_str,
-                        'datetime': datetime_obj.isoformat()
-                    }
-                    
-                    # Add all weather parameters
-                    weather_params = [
-                        'temperature', 'humidity', 'airPressure', 
-                        'rainfall1h', 'rainfall24h', 'windDirection', 
-                        'WindSpeedAvg', 'windSpeedMax'
-                    ]
-                    
-                    for param in weather_params:
-                        value = payload.get(param)
-                        if value is not None:
-                            data_point[param] = float(value) if isinstance(value, Decimal) else value
-                    
-                    formatted_data.append(data_point)
-                    
-                except ValueError as e:
-                    print(f"DEBUG: Date parsing error for {timestamp}: {str(e)}")
-                    continue
+            payload = item.get('data', {}).get('decoded_payload', {})
+            if payload and 'date' in payload and 'time' in payload:
+                # Using ISO 8601 format is best practice for charts
+                timestamp = f"{payload['date']}T{payload['time']}" 
+                data_point = {'timestamp': timestamp}
+                for key, value in payload.items():
+                    if isinstance(value, Decimal):
+                        data_point[key] = float(value)
+                formatted_data.append(data_point)
         
-        print(f"DEBUG: Successfully formatted {len(formatted_data)} data points")
-        
-        return jsonify({
-            'data': formatted_data,
-            'total_records': len(formatted_data),
-            'date_range': {
-                'start': start_date.strftime('%Y-%m-%d'),
-                'end': end_date.strftime('%Y-%m-%d'),
-                'days': days
-            }
-        })
-        
+        return jsonify({'data': formatted_data})
     except Exception as e:
-        print(f"ERROR: Exception in get_historical_data: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return jsonify({"error": f"Failed to fetch historical weather data: {str(e)}"}), 500
+        print(f"Error in /api/historical-data: {str(e)}")
+        return jsonify({"error": "An unexpected server error occurred"}), 500
+    
+# In app.py
 
 @app.route('/api/request-data', methods=['POST'])
 def request_data():
@@ -249,6 +126,7 @@ def request_data():
             'organization': data.get('organization', 'N/A'),
             'start_date': data['start_date'],
             'end_date': data['end_date'],
+            'station_id': data['stationId'], # <-- FIX: Save the station ID with the request
             'data_parameters': data.get('data_type'),
             'purpose': data.get('purpose', 'N/A'),
             'request_timestamp': datetime.now(timezone.utc).isoformat(),
@@ -268,14 +146,11 @@ def request_data():
 
         Request Details:
         - User Email: {data['email']}
-        - Organization: {data.get('organization', 'N/A')}
+        - Station: {data['stationId']}
         - Date Range: {data['start_date']} to {data['end_date']}
-        - Purpose: {data.get('purpose', 'N/A')}
 
         To approve this request and send the data, click the link below:
         {approval_link}
-
-        If you do not approve, simply ignore this email.
         """
         msg.attach(MIMEText(body, 'plain'))
         send_email(msg)
@@ -309,46 +184,55 @@ def approve_request():
         if request_details.get('status') == 'approved':
             return "This request has already been approved and data has been sent.", 200
 
+        # <-- FIX: Load start_date, end_date, and station_id from the stored request
+        start_date = request_details['start_date']
+        end_date = request_details['end_date']
+        station_id = request_details['station_id']
+        
+        # <-- FIX: Handle the leading space in the device_id to match the database
+        actual_device_id_in_db = ' ' + station_id.strip()
+
         # Fetch weather data
         weather_table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
-        scan_response = weather_table.scan(
-            FilterExpression=boto3.dynamodb.conditions.Attr('data.decoded_payload.date').between(start_date, end_date)
-        )
+        
+        # <-- FIX: Update the filter to use the loaded variables and filter by station
+        filter_expression = Attr('device_id').eq(actual_device_id_in_db) & Attr('data.decoded_payload.date').between(start_date, end_date)
+        
+        scan_response = weather_table.scan(FilterExpression=filter_expression)
         items = scan_response.get('Items', [])
-        print("Scan items:", items)
+
         if not items:
-            # Update status to approved even if no data, to prevent re-runs
             requests_table.update_item(
                 Key={'request_id': request_id},
                 UpdateExpression="set #s = :s",
                 ExpressionAttributeNames={'#s': 'status'},
                 ExpressionAttributeValues={':s': 'approved'}
             )
+            # You might want to notify the user that no data was found
             return "Request approved, but no weather data was found for the specified date range. The user has been notified.", 200
 
         # Create CSV and send email to the user
         output = io.StringIO()
         writer = csv.writer(output)
-        header = ['date', 'time', 'temperature', 'humidity', 'airPressure', 'rainfall1h', 'rainfall24h', 'windDirection', 'windSpeedAvg', 'windSpeedMax']
+        # Corrected the header to match the payload keys
+        header = ['date', 'time', 'temperature', 'humidity', 'airPressure', 'rainfall1h', 'rainfall24h', 'windDirection', 'WindSpeedAvg', 'windSpeedMax']
         writer.writerow(header)
         for item in items:
             payload = item['data']['decoded_payload']
-            writer.writerow([
-                payload.get(k) for k in ['date', 'time', 'temperature', 'humidity', 'airPressure', 'rainfall1h', 'rainfall24h', 'windDirection', 'WindSpeedAvg', 'windSpeedMax']
-            ])
+            writer.writerow([payload.get(k) for k in header])
         csv_data = output.getvalue()
         
         msg = MIMEMultipart()
         msg['From'] = f"{EMAIL_CONFIG['sender_name']} <{EMAIL_CONFIG['sender_email']}>"
         msg['To'] = request_details['email']
-        msg['Subject'] = f"Your Approved Weather Data from {request_details['start_date']} to {request_details['end_date']}"
+        msg['Subject'] = f"Your Approved Weather Data from {start_date} to {end_date}"
         body = "Hello,\n\nYour request for historical weather data has been approved. Please find the data attached as a CSV file.\n\nRegards,\nWeather Station Team"
         msg.attach(MIMEText(body, 'plain'))
         
         part = MIMEBase('application', "octet-stream")
         part.set_payload(csv_data.encode())
         encoders.encode_base64(part)
-        part.add_header('Content-Disposition', f'attachment; filename="weather_data.csv"')
+        part.add_header('Content-Disposition', f'attachment; filename="weather_data_{start_date}_to_{end_date}.csv"')
         msg.attach(part)
         
         send_email(msg)
@@ -365,9 +249,10 @@ def approve_request():
         return "Request approved successfully! The data has been sent to the user.", 200
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print(f"Error approving request {request_id}: {str(e)}")
         return "An error occurred while processing the approval.", 500
-
 @app.route('/api/weather')
 def get_weather_data():
     try:
