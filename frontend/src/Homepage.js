@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Homepage.css';
+import { Link } from 'react-router-dom';
+import MapComponent from './MapComponent';
+import { useNavigate } from 'react-router-dom';
+
+
+
 
 const Homepage = ({ onNavigateToWeather }) => {
+  const navigate = useNavigate();
   const [currentWeather, setCurrentWeather] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -31,23 +38,24 @@ const Homepage = ({ onNavigateToWeather }) => {
     const interval = setInterval(fetchWeatherData, 300000); // Refresh every 5 minutes
     return () => clearInterval(interval);
   }, []);
+  
 
   const handleAccessWeatherApp = () => {
-    if (onNavigateToWeather) {
-      onNavigateToWeather('live');
-    } else {
-      // Fallback: redirect to weather app
-      window.location.href = '#weather';
-    }
+    navigate('/map');
+  };
+
+  const handleOpenRiverDashboard = () => {
+    navigate('/river-forecast');
   };
 
   const handleDataRequest = () => {
-    if (onNavigateToWeather) {
-      onNavigateToWeather('request');
-    } else {
-      window.location.href = '#weather?tab=request';
-    }
-  };
+    navigate('/map', { state: { openTab: 'request' } });
+  }
+  //const handleOpenRiverDashboard = () => {
+    // This will open your river forecast dashboard (running on port 8000) in a new tab.
+   // window.open('http://localhost:8000', '_blank');
+  //};
+  
 
   return (
     <div className="homepage">
@@ -87,21 +95,28 @@ const Homepage = ({ onNavigateToWeather }) => {
             </div>
 
             <div className="header-actions">
-              <button 
-                className="btn btn-primary"
-                onClick={handleAccessWeatherApp}
-              >
-                <i className="fas fa-tachometer-alt"></i>
-                Access Live Data
-              </button>
-              <button 
-                className="btn btn-secondary"
-                onClick={handleDataRequest}
-              >
-                <i className="fas fa-download"></i>
-                Request Historical Data
-              </button>
-            </div>
+            <button 
+              className="btn btn-primary"
+              onClick={handleAccessWeatherApp}
+            >
+              <i className="fas fa-tachometer-alt"></i>
+              Access Live Data
+            </button>
+            <button 
+              className="btn btn-success"
+              onClick={handleOpenRiverDashboard}
+            >
+              <i className="fas fa-water"></i>
+              Periyar River Forecast
+            </button>
+            <button 
+              className="btn btn-secondary"
+              onClick={handleDataRequest}
+            >
+              <i className="fas fa-download"></i>
+              Request Historical Data
+            </button>
+          </div>
           </div>
         </div>
       </header>
@@ -113,6 +128,7 @@ const Homepage = ({ onNavigateToWeather }) => {
             <li className="nav-item">
               <a href="#home" className="nav-link active">Home</a>
             </li>
+            
             <li className="nav-item">
               <a href="#about" className="nav-link">About</a>
             </li>
@@ -131,9 +147,10 @@ const Homepage = ({ onNavigateToWeather }) => {
       <section id="home" className="hero-section">
         <div className="hero-container">
           <div className="hero-content">
-            <h2>Meteorological Research and Development Sector for AI-IoT Innovation</h2>
+            <h2>Meteorological Research & Data Center</h2>
             <p>
-             Real-time data from the weather station at Adi Shankara Institute of Engineering and Technology
+              Real-time meteorological data collection and analysis for research, 
+              education, and public service in the Kalady region
             </p>
 
 
@@ -388,40 +405,20 @@ const Homepage = ({ onNavigateToWeather }) => {
             </div>
 
             <div className="footer-section">
-  <h3>About WeatherSense</h3>
-  <p className="footer-text">
-    Smart Meteorological & Air Quality Monitoring Platform
-  </p>
-
-  <div className="social-links">
-    <a href="https://www.linkedin.com/in/aiiot-asiet-b22302308" 
-        className="social-link" 
-        target="_blank" 
-        rel="noopener noreferrer">
-        <i className="fab fa-linkedin-in"></i>
-    </a>
-    
-    <a href="https://www.instagram.com/aiiot_adishankara?igsh=aXY4bXQ2cjVhYWM2"
-        className="social-link"
-        target="_blank"
-        rel="noopener noreferrer">
-        <i className="fab fa-instagram"></i>
-    </a>
-    <a href="#" className="social-link">
-      <i className="fab fa-facebook-f"></i>
-    </a>
-    <a href="#" className="social-link">
-      <i className="fab fa-twitter"></i>
-    </a>
-  </div>
-</div>
-
-
+              <h4>Institution</h4>
+              <ul className="footer-links">
+                <li><a href="https://www.adishankara.ac.in" target="_blank" rel="noopener noreferrer">Adishankara Engineering College</a></li>
+                <li><a href="https://www.india.gov.in" target="_blank" rel="noopener noreferrer">
+                Govt. of India
+              </a></li>
+              </ul>
+            </div>
           </div>
 
           <div className="footer-bottom">
             <p>
-              © {new Date().getFullYear()} All rights reserved. Developed and managed by Center for AI & IoT Innovation, Adi Shankara Institute of Engineering and Technology.
+              © {new Date().getFullYear()} Adishankara Engineering College Weather Monitoring System. 
+              All rights reserved.
             </p>
           </div>
         </div>

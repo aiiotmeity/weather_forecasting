@@ -1,0 +1,586 @@
+/* Stunning River Dashboard CSS - Premium Blue Theme */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+:root {
+  --ocean-blue: #0c4a6e;
+  --sky-blue: #0284c7;
+  --light-blue: #7dd3fc;
+  --aqua: #06b6d4;
+  --deep-blue: #082f49;
+  --ice-blue: #e0f2fe;
+  --teal: #14b8a6;
+  --emerald: #10b981;
+  --white: #ffffff;
+  --glass-white: rgba(255, 255, 255, 0.95);
+  --text-dark: #0f172a;
+  --text-gray: #64748b;
+  --shadow-glow: 0 10px 40px rgba(6, 182, 212, 0.3);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 20px 60px rgba(6, 182, 212, 0.4);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.river-dashboard-body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #0c4a6e 0%, #075985 25%, #0284c7 50%, #0891b2 75%, #06b6d4 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated background gradient */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Floating water bubbles background effect */
+.river-dashboard-body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 20% 50%, rgba(125, 211, 252, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(14, 165, 233, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Premium Header with Glassmorphism */
+.river-gov-header {
+  background: rgba(12, 74, 110, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  padding: 2rem 0;
+  position: relative;
+  z-index: 100;
+}
+
+.river-header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+.river-logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  animation: slideInLeft 0.8s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.river-logo {
+  width: 85px;
+  height: 85px;
+  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  box-shadow: 0 10px 30px rgba(6, 182, 212, 0.5);
+  position: relative;
+  overflow: hidden;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.river-logo::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.river-title-section h1 {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+}
+
+.river-title-section p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 400;
+}
+
+.river-header-badge {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(220, 38, 38, 0.9));
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: slideInRight 0.8s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.river-header-badge::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  animation: blink 1.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Dashboard Container */
+.dashboard-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  position: relative;
+  z-index: 10;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Stunning Alert Banner with Glassmorphism */
+.alert-banner {
+  background: var(--glass-white);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 2rem 3rem;
+  border-radius: 24px;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 3rem;
+  font-size: 1.5rem;
+  box-shadow: var(--shadow-glow);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.alert-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.7s;
+}
+
+.alert-banner:hover::before {
+  left: 100%;
+}
+
+.alert-banner.normal { 
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.95), rgba(209, 250, 229, 0.95));
+  border-left: 8px solid #10b981;
+  color: #047857;
+}
+
+.alert-banner.watch { 
+  background: linear-gradient(135deg, rgba(254, 252, 232, 0.95), rgba(254, 243, 199, 0.95));
+  border-left: 8px solid #f59e0b;
+  color: #92400e;
+}
+
+.alert-banner.warning { 
+  background: linear-gradient(135deg, rgba(255, 247, 237, 0.95), rgba(254, 215, 170, 0.95));
+  border-left: 8px solid #f97316;
+  color: #7c2d12;
+}
+
+.alert-banner.critical { 
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.95), rgba(254, 202, 202, 0.95));
+  border-left: 8px solid #ef4444;
+  color: #7f1d1d;
+  animation: criticalPulse 2s infinite;
+}
+
+@keyframes criticalPulse {
+  0%, 100% { box-shadow: 0 10px 40px rgba(239, 68, 68, 0.3); }
+  50% { box-shadow: 0 10px 60px rgba(239, 68, 68, 0.6); }
+}
+
+.alert-banner strong {
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 1.1em;
+}
+
+/* Premium Metric Cards with 3D Effect */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.metric-card {
+  background: var(--glass-white);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 2.5rem;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #06b6d4, #0284c7, #0891b2);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.metric-card:hover {
+  transform: translateY(-12px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: rgba(6, 182, 212, 0.5);
+}
+
+.metric-title {
+  font-size: 0.95rem;
+  color: var(--text-gray);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.metric-value {
+  font-size: 4.5rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #0c4a6e, #0284c7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  font-family: 'Poppins', sans-serif;
+}
+
+.metric-value span {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+  color: var(--text-gray);
+}
+
+.metric-timestamp {
+  font-size: 0.875rem;
+  color: var(--text-gray);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 0.75rem 1.25rem;
+  border-radius: 50px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+/* Forecast Section - Premium Design */
+.forecast-section {
+  background: var(--glass-white);
+  backdrop-filter: blur(20px) saturate(180%);
+  padding: 3rem;
+  border-radius: 32px;
+  box-shadow: var(--shadow-card);
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.forecast-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #10b981, #06b6d4, #0284c7);
+  background-size: 200% 100%;
+  animation: shimmer 3s infinite;
+}
+
+.forecast-section h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0c4a6e, #0284c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+  padding-bottom: 1.5rem;
+}
+
+.forecast-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 5px;
+  background: linear-gradient(90deg, #06b6d4, #0284c7);
+  border-radius: 10px;
+}
+
+.forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+}
+
+.forecast-card {
+  background: linear-gradient(135deg, rgba(224, 242, 254, 0.8), rgba(186, 230, 253, 0.6));
+  backdrop-filter: blur(10px);
+  padding: 2rem 1.5rem;
+  border-radius: 20px;
+  text-align: center;
+  border: 2px solid rgba(6, 182, 212, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.forecast-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.2), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.forecast-card:hover {
+  transform: translateY(-8px) scale(1.05);
+  border-color: #06b6d4;
+  box-shadow: 0 20px 40px rgba(6, 182, 212, 0.3);
+}
+
+.forecast-card:hover::before {
+  opacity: 1;
+  animation: ripple 1s infinite;
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+.forecast-time {
+  font-size: 0.9rem;
+  color: var(--ocean-blue);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.forecast-value {
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0c4a6e, #0284c7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Loading State - Elegant Spinner */
+.loading-message {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+  color: white;
+}
+
+.loading-message::before {
+  content: '';
+  width: 80px;
+  height: 80px;
+  border: 6px solid rgba(255, 255, 255, 0.2);
+  border-top: 6px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-message div:first-of-type {
+  font-size: 2rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+}
+
+.error-message {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .river-header-container {
+    flex-direction: column;
+    text-align: center;
+    padding: 0 1rem;
+  }
+
+  .river-title-section h1 {
+    font-size: 1.75rem;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .forecast-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .metric-value {
+    font-size: 3rem;
+  }
+
+  .alert-banner {
+    font-size: 1.2rem;
+    padding: 1.5rem 2rem;
+  }
+
+  .forecast-section {
+    padding: 2rem 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .forecast-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .river-logo {
+    width: 70px;
+    height: 70px;
+    font-size: 2.5rem;
+  }
+
+  .river-title-section h1 {
+    font-size: 1.5rem;
+  }
+
+  .forecast-section h2 {
+    font-size: 1.75rem;
+  }
+}
