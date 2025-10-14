@@ -113,6 +113,8 @@ def get_historical_data():
     
 # In app.py
 
+# In app.py
+
 @app.route('/api/request-data', methods=['POST'])
 def request_data():
     """
@@ -134,8 +136,9 @@ def request_data():
             'organization': data.get('organization', 'N/A'),
             'start_date': data['start_date'],
             'end_date': data['end_date'],
-            'station_id': data['stationId'], # <-- FIX: Save the station ID with the request
-            'data_parameters': data.get('data_type'),
+            'station_id': data['stationId'],
+            # --- FIX: Changed data.get('data_type') to data.get('parameters') to match the frontend key ---
+            'data_parameters': data.get('parameters'), 
             'purpose': data.get('purpose', 'N/A'),
             'request_timestamp': datetime.now(timezone.utc).isoformat(),
             'status': 'pending'
@@ -156,6 +159,7 @@ def request_data():
         - User Email: {data['email']}
         - Station: {data['stationId']}
         - Date Range: {data['start_date']} to {data['end_date']}
+        - Requested Parameters: {data.get('parameters', 'All')}
 
         To approve this request and send the data, click the link below:
         {approval_link}
@@ -192,42 +196,50 @@ def approve_request():
         if request_details.get('status') == 'approved':
             return "This request has already been approved and data has been sent.", 200
 
-        # <-- FIX: Load start_date, end_date, and station_id from the stored request
         start_date = request_details['start_date']
         end_date = request_details['end_date']
         station_id = request_details['station_id']
-        
-        # <-- FIX: Handle the leading space in the device_id to match the database
         actual_device_id_in_db = ' ' + station_id.strip()
+
+        # --- FIX: Get the list of requested parameters from the saved request ---
+        requested_parameters = request_details.get('data_parameters')
 
         # Fetch weather data
         weather_table = boto3.resource('dynamodb', region_name='us-east-1').Table('weather_station_data')
-        
-        # <-- FIX: Update the filter to use the loaded variables and filter by station
         filter_expression = Attr('device_id').eq(actual_device_id_in_db) & Attr('data.decoded_payload.date').between(start_date, end_date)
-        
         scan_response = weather_table.scan(FilterExpression=filter_expression)
         items = scan_response.get('Items', [])
 
         if not items:
-            requests_table.update_item(
-                Key={'request_id': request_id},
-                UpdateExpression="set #s = :s",
-                ExpressionAttributeNames={'#s': 'status'},
-                ExpressionAttributeValues={':s': 'approved'}
-            )
-            # You might want to notify the user that no data was found
-            return "Request approved, but no weather data was found for the specified date range. The user has been notified.", 200
+            # Handle case with no data
+            return "Request approved, but no weather data was found for the specified date range.", 200
 
-        # Create CSV and send email to the user
+        # --- START OF FIX: Dynamically build the CSV header based on the request ---
         output = io.StringIO()
         writer = csv.writer(output)
-        # Corrected the header to match the payload keys
-        header = ['date', 'time', 'temperature', 'humidity', 'airPressure', 'rainfall1h', 'rainfall24h', 'windDirection', 'WindSpeedAvg', 'windSpeedMax']
+        
+        # Define all possible data columns available from the payload
+        all_possible_headers = ['temperature', 'humidity', 'airPressure', 'rainfall1h', 'rainfall24h', 'windDirection', 'WindSpeedAvg', 'windSpeedMax']
+        
+        # Start with the essential columns
+        header = ['date', 'time']
+
+        # If the user selected specific parameters, use them. Otherwise, use all.
+        if requested_parameters and isinstance(requested_parameters, list) and len(requested_parameters) > 0:
+            # Filter the master list to only include what was requested
+            selected_headers = [h for h in all_possible_headers if h in requested_parameters]
+            header.extend(selected_headers)
+        else:
+            # If no specific parameters were requested, include all of them
+            header.extend(all_possible_headers)
+            
         writer.writerow(header)
         for item in items:
             payload = item['data']['decoded_payload']
+            # Write only the data for the columns present in the dynamic header
             writer.writerow([payload.get(k) for k in header])
+        # --- END OF FIX ---
+        
         csv_data = output.getvalue()
         
         msg = MIMEMultipart()
@@ -261,6 +273,7 @@ def approve_request():
         traceback.print_exc()
         print(f"Error approving request {request_id}: {str(e)}")
         return "An error occurred while processing the approval.", 500
+    
 @app.route('/api/weather')
 def get_weather_data():
     try:

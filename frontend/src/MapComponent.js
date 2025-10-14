@@ -465,8 +465,16 @@ const DataRequestForm = ({ onSubmit, loading, stations, currentStation }) => {
     };
 
     const parameterOptions = [
-        'temperature', 'humidity', 'airPressure', 'windSpeed', 'windDirection', 'rainfall'
+        { label: 'Temperature', value: 'temperature' },
+        { label: 'Humidity', value: 'humidity' },
+        { label: 'Air Pressure', value: 'airPressure' },
+        { label: 'Wind Speed (Avg)', value: 'WindSpeedAvg' },
+        { label: 'Wind Speed (Max)', value: 'windSpeedMax' },
+        { label: 'Wind Direction', value: 'windDirection' },
+        { label: 'Rainfall (1h)', value: 'rainfall1h' },
+        { label: 'Rainfall (24h)', value: 'rainfall24h' },
     ];
+
 
     return (
         <div className="data-request-form">
@@ -554,15 +562,16 @@ const DataRequestForm = ({ onSubmit, loading, stations, currentStation }) => {
             <div className="form-group">
                 <label>📊 Parameters (Optional - Leave blank for all data)</label>
                 <div className="checkbox-grid">
+                    {/* --- FIX: Use the updated parameterOptions array to render checkboxes --- */}
                     {parameterOptions.map(param => (
-                        <label key={param} className="checkbox-label">
+                        <label key={param.value} className="checkbox-label">
                             <input
                                 type="checkbox"
-                                value={param}
-                                checked={formData.parameters.includes(param)}
+                                value={param.value}
+                                checked={formData.parameters.includes(param.value)}
                                 onChange={handleChange}
                             />
-                            <span>{param.charAt(0).toUpperCase() + param.slice(1)}</span>
+                            <span>{param.label}</span>
                         </label>
                     ))}
                 </div>
