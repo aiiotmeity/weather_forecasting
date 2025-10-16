@@ -127,19 +127,7 @@ const RiverDashboard = () => {
                         </div>
                     </div>
 
-                    <div className="metric-card">
-                        <div className="metric-title">
-                            <i className="fas fa-cloud-rain" style={{ color: '#06b6d4' }}></i>
-                            Latest Rainfall
-                        </div>
-                        <div className="metric-value">
-                            {data.currentRainfall.toFixed(1)}
-                            <span>mm</span>
-                        </div>
-                        <div className="metric-timestamp">
-                            <i className="far fa-clock"></i> {formatTimestamp(data.rainfallTime)}
-                        </div>
-                    </div>
+                    
 
                     <div className="metric-card">
                         <div className="metric-title">

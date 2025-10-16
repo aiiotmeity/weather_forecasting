@@ -1,6 +1,6 @@
 /* --- OPTIMIZED MODERN DESIGN: CSS VARIABLES --- */
 :root {
-  --primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --primary-bg: white;
   --secondary-bg: #f8fafc;
   --sidebar-bg: rgba(255, 255, 255, 0.95);
   --header-bg: rgba(255, 255, 255, 0.98);

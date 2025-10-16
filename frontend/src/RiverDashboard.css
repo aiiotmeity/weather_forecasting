@@ -28,7 +28,7 @@
 
 .river-dashboard-body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(135deg, #0c4a6e 0%, #075985 25%, #0284c7 50%, #0891b2 75%, #06b6d4 100%);
+  background: white;
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
   min-height: 100vh;
