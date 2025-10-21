@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import './Homepage.css';
 import { useNavigate } from 'react-router-dom';
 
-
-
-
 const Homepage = ({ onNavigateToWeather }) => {
   const navigate = useNavigate();
   const [currentWeather, setCurrentWeather] = useState(null);

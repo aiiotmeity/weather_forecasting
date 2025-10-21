@@ -6,7 +6,7 @@ import L from 'leaflet';
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import './App.css';
-import { useLocation, useNavigate } from 'react-router-dom'; // CORRECTED: Added imports
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // --- LEAFLET ICON FIX ---
 let DefaultIcon = L.icon({
@@ -113,9 +113,9 @@ const WeatherMap = ({ stations, onStationSelect, currentStationId }) => {
     const [selectedStation, setSelectedStation] = useState(null);
 
     const handleMarkerClick = (station) => {
-    setSelectedStation(station);
-    onStationSelect(station.id);
-};
+        setSelectedStation(station);
+        onStationSelect(station.id);
+    };
 
     return (
         <div className="map-container">
@@ -562,7 +562,6 @@ const DataRequestForm = ({ onSubmit, loading, stations, currentStation }) => {
             <div className="form-group">
                 <label>📊 Parameters (Optional - Leave blank for all data)</label>
                 <div className="checkbox-grid">
-                    {/* --- FIX: Use the updated parameterOptions array to render checkboxes --- */}
                     {parameterOptions.map(param => (
                         <label key={param.value} className="checkbox-label">
                             <input
@@ -724,39 +723,18 @@ const MapComponent = () => {
     const [notification, setNotification] = useState(null);
 
     const refreshIntervalRef = useRef(null);
-    const API_URL = 'http://localhost:5000/api';
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
     const currentStation = weatherStations.find(s => s.id === currentStationId);
 
-    // CORRECTED: Added hooks for navigation state
     const location = useLocation();
     const navigate = useNavigate();
 
-    // CORRECTED: This effect checks for navigation state and sets the active tab
-    useEffect(() => {
-        if (location.state?.openTab) {
-            setActiveTab(location.state.openTab);
-            setIsSidebarOpen(true);
-        }
-    }, [location.state]);
+    // *** FIX START ***
+    // Moved fetchWeatherData before the useEffect that uses it.
 
-    // Auto-refresh weather data every 30 seconds
-    useEffect(() => {
-        if (currentStationId && currentStation?.status === 'active') {
-            refreshIntervalRef.current = setInterval(() => {
-                fetchWeatherData(currentStationId, false); // Silent refresh
-            }, 30000);
-        }
-
-        return () => {
-            if (refreshIntervalRef.current) {
-                clearInterval(refreshIntervalRef.current);
-            }
-        };
-    }, [currentStationId, currentStation]);
-
-    const showNotification = (message, type = 'info') => {
+    const showNotification = useCallback((message, type = 'info') => {
         setNotification({ message, type });
-    };
+    }, []);
 
     const fetchWeatherData = useCallback(async (stationId, showLoader = true) => {
         const station = weatherStations.find(s => s.id === stationId);
@@ -778,10 +756,6 @@ const MapComponent = () => {
             setWeatherData(data);
             setError(null);
 
-            if (!showLoader) {
-                // Optional: show a subtle update notification if desired
-                // showNotification('Weather data updated', 'success');
-            }
         } catch (err) {
             const errorMessage = err.message.includes('fetch')
                 ? 'Unable to connect to weather station. Please check your internet connection.'
@@ -792,7 +766,32 @@ const MapComponent = () => {
         } finally {
             if (showLoader) setLoading(false);
         }
-    }, [fetchWeatherData]);
+    }, [showNotification]); // Added correct dependency
+
+    // *** FIX END ***
+
+    useEffect(() => {
+        if (location.state?.openTab) {
+            setActiveTab(location.state.openTab);
+            setIsSidebarOpen(true);
+        }
+    }, [location.state]);
+
+    // Auto-refresh weather data every 30 seconds
+    useEffect(() => {
+        if (currentStationId && currentStation?.status === 'active') {
+            refreshIntervalRef.current = setInterval(() => {
+                fetchWeatherData(currentStationId, false); // Silent refresh
+            }, 30000);
+        }
+
+        return () => {
+            if (refreshIntervalRef.current) {
+                clearInterval(refreshIntervalRef.current);
+            }
+        };
+    }, [currentStationId, currentStation, fetchWeatherData]); // Added correct dependency
+
 
     const fetchHistoricalData = useCallback(async (days) => {
         if (!currentStationId) return;
@@ -826,7 +825,7 @@ const MapComponent = () => {
         } finally {
             setHistoricalLoading(false);
         }
-    }, [currentStationId]);
+    }, [currentStationId, showNotification]);
 
     const handleStationSelect = (stationId) => {
         const station = weatherStations.find(s => s.id === stationId);
@@ -862,7 +861,6 @@ const MapComponent = () => {
         }
     };
 
-    // CORRECTED: This function now uses the navigate hook to go to the root URL
     const navigateToHome = () => {
         navigate('/');
     };
