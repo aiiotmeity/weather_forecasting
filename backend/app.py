@@ -27,7 +27,7 @@ from automation.run_dashboard import DashboardAutomation
 load_dotenv()
 app = Flask(__name__)
 
-CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"])
+CORS(app, origins=["http://localhost:3000", "http://127.0.0.1:3000","http://127.0.0.1:3001","http://localhost:3001"])
 
 EMAIL_CONFIG = {
     'smtp_server': 'smtp.gmail.com',

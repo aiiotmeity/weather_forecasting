@@ -792,7 +792,7 @@ const MapComponent = () => {
         } finally {
             if (showLoader) setLoading(false);
         }
-    }, []);
+    }, [fetchWeatherData]);
 
     const fetchHistoricalData = useCallback(async (days) => {
         if (!currentStationId) return;

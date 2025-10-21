@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './Homepage.css';
-import { Link } from 'react-router-dom';
-import MapComponent from './MapComponent';
 import { useNavigate } from 'react-router-dom';
 
 
